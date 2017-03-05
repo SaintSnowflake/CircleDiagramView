@@ -20,8 +20,7 @@ import java.util.ArrayList;
  */
 public class CircleDiagramView extends View {
     public ArrayList<CircleDiagramFragment> fragments = new ArrayList<>();
-    private int displayWidth;
-    private int displayHeight;
+    private float rectangleSize;
     private RectF rectf;
     private Paint p;
 
@@ -34,9 +33,9 @@ public class CircleDiagramView extends View {
         this.touchAngle = 360;
         p = new Paint();
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-        this.displayWidth = metrics.widthPixels;
-        this.displayHeight = metrics.heightPixels;
-        rectf = new RectF(50, 50, displayWidth - 50, displayWidth - 50);
+        // Set rectangle size using display width. Around the rectangle space the size of 50 px.
+        this.rectangleSize = metrics.widthPixels - 100;
+        rectf = new RectF(50, 50, rectangleSize + 50, rectangleSize + 50);
     }
 
     /**
@@ -64,22 +63,24 @@ public class CircleDiagramView extends View {
             // If touch point is between the lines forming the current fragment then
             // (It means that the current fragment was selected)
             if (angle < this.touchAngle && this.touchAngle < angle + fragmentSize) {
-                // Find the fragment offset values from the center of the diagram
-                float sin = (float) Math.sin(Math.toRadians(angle + fragmentSize / 2)) * 50;
-                float cos = (float) Math.cos(Math.toRadians(angle + fragmentSize / 2)) * 50;
-                Log.d("myLog", "Angle: " + (angle + fragmentSize / 2) + "Sin: " + sin + ", cos: " + cos);
-                // Set new rectangle coordinates using fragment offset values
-                rectf.set(50 + cos, 50 + sin, displayWidth - 50 + cos, displayWidth - 50 + sin);
+                // A single fragment does not need to move
+                if (fragments.size() > 1) {
+                    // Find the fragment offset values from the center of the diagram
+                    float sin = (float) Math.sin(Math.toRadians(angle + fragmentSize / 2)) * 50;
+                    float cos = (float) Math.cos(Math.toRadians(angle + fragmentSize / 2)) * 50;
+                    Log.d("myLog", "Angle: " + (angle + fragmentSize / 2) + "Sin: " + sin + ", cos: " + cos);
+                    // Set new rectangle coordinates using fragment offset values
+                    rectf = new RectF(50 + cos, 50 + sin, rectangleSize + 50 + cos, rectangleSize + 50 + sin);
+                }
                 // Draw new fragment
                 canvas.drawArc(rectf, angle, fragmentSize, true, p);
                 // Draw black stroke for fragment
                 p.setStyle(Paint.Style.STROKE);
-                p.setColor(Color.BLACK);
+                p.setColor(Color.WHITE);
                 canvas.drawArc(rectf, angle, fragmentSize, true, p);
-                // Show message about fragment value and its share of sector
-                String toastMessage = "Select a fragment.\n" +
-                "The value of " + fragments.get(i).getValue() + ".\n" +
-                "The share of sector " + (float) 100 / sum * fragments.get(i).getValue() + "%.";
+                // Show message about fragment value and share of sector
+                String toastMessage = "The value is " + fragments.get(i).getValue() + ".\n" +
+                "The share of sector is " + (float) 100 / sum * fragments.get(i).getValue() + "%.";
                 Toast toast = Toast.makeText(super.getContext(),
                         toastMessage,
                         Toast.LENGTH_SHORT);
@@ -87,7 +88,7 @@ public class CircleDiagramView extends View {
                 // "Deleted" information about touch point
                 this.touchAngle = 360;
                 // Set old rectangle coordinates
-                rectf.set(50, 50, displayWidth - 50, displayWidth - 50);
+                rectf = new RectF(50, 50, rectangleSize + 50, rectangleSize + 50);
             }
             else {
                 // Draw new fragment

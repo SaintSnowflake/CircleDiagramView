@@ -22,7 +22,9 @@
         android:layout_height="50dp"
         android:text="Добавить"
         android:id="@+id/addNewFragmentButton"
-        android:onClick="onClick" />
+        android:onClick="onClick"
+        android:background="@color/colorButton"
+        android:textColor="@color/colorText"/>
 
     <com.example.snowf.example.CircleDiagramView
         android:layout_width="match_parent"
